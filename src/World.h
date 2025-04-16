@@ -8,6 +8,7 @@
 #include <array>
 #include "Camera.h"
 #include "BoundingBox.h"
+#include "Tile.h"
 #include "constants.h"
 
 class Camera;
@@ -18,11 +19,12 @@ public:
     void init();
     void is_movement_allowed(int& desired_x, int &desired_y, BoundingBox& bounding_box);
 private:
-    std::vector<std::vector<int>> terrain_data;
+    std::vector<std::vector<Tile>> terrain_data;
 
+    int get_tile_coordinate(int coordinate);
     void generate();
     bool apply_rules();
-    int count_neighbours(int x, int y, int to_count);
+    int count_neighbours(int x, int y, TileType to_count);
     void find_furthest_allowed_position(int x, int y, int& desired_mov_x, int& desired_mov_y);
 };
 

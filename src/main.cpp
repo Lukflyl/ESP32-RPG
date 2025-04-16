@@ -17,7 +17,7 @@ const int PIN_JOYSTICK_BTN = 25;
 
 Camera camera;
 World world;
-Player player(world, WORLD_SIZE * UNIT_SIZE / 2, WORLD_SIZE * UNIT_SIZE / 2, {WORLD_SIZE * UNIT_SIZE / 2, WORLD_SIZE * UNIT_SIZE / 2, 9, 0, UNIT_SIZE - 1, 2 * UNIT_SIZE - 1});
+Player player(world, WORLD_SIZE * UNIT_SIZE / 2 - 50, WORLD_SIZE * UNIT_SIZE / 2, {WORLD_SIZE * UNIT_SIZE / 2, WORLD_SIZE * UNIT_SIZE / 2, 9, 0, UNIT_SIZE - 1, 2 * UNIT_SIZE - 1});
 long current_time = millis();
 long last_update_time = current_time;
 
