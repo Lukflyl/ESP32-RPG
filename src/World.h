@@ -12,6 +12,7 @@
 #include "constants.h"
 
 class Camera;
+class BoundingBox;
 
 class World {
 public:

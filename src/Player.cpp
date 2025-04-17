@@ -18,9 +18,7 @@ void Player::draw(TFT_eSprite& g, Camera& camera) {
         }
     }
 
-    for (auto [x, y]: bounding_box.get_corners()) {
-        g.drawPixel(x - camera.get_offset_pixels_x(), y - camera.get_offset_pixels_y(), TFT_RED);
-    }
+    bounding_box.draw(g, camera.get_offset_pixels_x(), camera.get_offset_pixels_y());
 }
 
 void Player::update(int direction_x, int direction_y){
