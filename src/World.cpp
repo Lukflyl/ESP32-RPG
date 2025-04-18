@@ -84,40 +84,45 @@ void World::draw(TFT_eSprite& g, Camera& camera) {
     }
 }
 
-void World::find_furthest_allowed_position(int x, int y, int& desired_mov_x, int& desired_mov_y) {
-    // the corners of the bounding box have to be on walkable tiles before running this fn
-    // invariant last_valid_x, last_valid_y always point to an allowed position!
-    Serial.println(String(desired_mov_x) + " " + String(desired_mov_y));
+bool World::is_movement_valid(BoundingBox& bounding_box, int dx, int dy) {
+    for (auto [x, y]: bounding_box.get_corners()) {
+        if (!terrain_data[get_tile_coordinate(y + dy)][get_tile_coordinate(x + dx)].is_walkable()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// the corners of the bounding box have to be on walkable tiles before running this fn
+void World::find_furthest_allowed_position(BoundingBox& bounding_box, int& dx, int& dy) {
     int low_x = 0;
     int last_valid_x = 0;
-    int high_x = desired_mov_x;
+    int high_x = dx;
     while(abs(low_x) < abs(high_x)) {
         int mid = (low_x + high_x) / 2;
-        if (!terrain_data[get_tile_coordinate(y)][get_tile_coordinate(x + mid)].is_walkable()) {
-            high_x = mid - (desired_mov_x > 0 ? 1 : -1);
+        if (!is_movement_valid(bounding_box, mid, 0)) {
+            high_x = mid - (dx > 0 ? 1 : -1);
         } else {
             last_valid_x = mid;
-            low_x = mid + (desired_mov_x > 0 ? 1 : -1);
+            low_x = mid + (dx > 0 ? 1 : -1);
         }
-        Serial.println(String(low_x) + " x " + String(high_x));
     }
 
     int low_y = 0;
     int last_valid_y = 0;
-    int high_y = desired_mov_y;
+    int high_y = dy;
     while(abs(low_y) < abs(high_y)) {
         int mid = (low_y + high_y) / 2;
-        if (!terrain_data[get_tile_coordinate(y + mid)][get_tile_coordinate(x)].is_walkable()) {
-            high_y = mid - (desired_mov_y > 0 ? 1 : -1);
+        if (!is_movement_valid(bounding_box, last_valid_x, mid)) {
+            high_y = mid - (dy > 0 ? 1 : -1);
         } else {
             last_valid_y = mid;
-            low_y = mid + (desired_mov_y > 0 ? 1 : -1);;
+            low_y = mid + (dy > 0 ? 1 : -1);;
         }
-        Serial.println(String(low_y) + " y " + String(high_y));
     }
 
-    desired_mov_x = last_valid_x;
-    desired_mov_y = last_valid_y;
+    dx = last_valid_x;
+    dy = last_valid_y;
 }
 
 int World::get_tile_coordinate(int coordinate) {
@@ -128,19 +133,9 @@ int World::get_tile_coordinate(int coordinate) {
     return tile;
 }
 
-void World::is_movement_allowed(int& desired_mov_x, int &desired_mov_y, BoundingBox& bounding_box) {
-    // TODO: Fix bug currently the player can manage to get into unwalkable tiles in some cases
-    // why - UNIT_SIZE ???
-    for (auto [x, y]: bounding_box.get_corners()) {
-        x -= UNIT_SIZE;
-        y -= UNIT_SIZE;
-        // Serial.println(y);
-        // Serial.println(x);
-        // if (!terrain_data[get_tile_coordinate(y)][get_tile_coordinate(x + desired_mov_x)].is_walkable()) {
-            find_furthest_allowed_position(x, y, desired_mov_x, desired_mov_y);
-        // }
-        // if (!terrain_data[get_tile_coordinate(y + desired_mov_y)][get_tile_coordinate(x)].is_walkable()) {
-            find_furthest_allowed_position(x, y, desired_mov_x, desired_mov_y);
-        // }
+void World::constraint_movement(BoundingBox& bounding_box, int& dx, int &dy) {
+    if (is_movement_valid(bounding_box, dx, dy)) {
+        return;
     }
+    find_furthest_allowed_position(bounding_box, dx, dy);
 }

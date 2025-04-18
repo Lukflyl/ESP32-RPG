@@ -15,13 +15,13 @@ int Camera::get_offset_pixels_x() {
 int Camera::get_offset_pixels_y() {
     return offset_pixels_y;
 }
-// TODO: solve
+
 int Camera::get_start_tile_x() {
-    return offset_pixels_x / UNIT_SIZE - 1;
+    return offset_pixels_x / UNIT_SIZE;
 }
 
 int Camera::get_start_tile_y() {
-    return offset_pixels_y / UNIT_SIZE - 1;
+    return offset_pixels_y / UNIT_SIZE;
 }
 
 int Camera::get_end_tile_x() {

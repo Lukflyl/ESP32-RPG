@@ -9,11 +9,11 @@
 TFT_eSPI tft = TFT_eSPI();  // Create an instance of the TFT_eSPI class
 TFT_eSprite canvas = TFT_eSprite(&tft);
 
-const int FPS = 6;
+const int FPS = 60;
 
-const int PIN_JOYSTICK_X = 27;
-const int PIN_JOYSTICK_Y = 26;
-const int PIN_JOYSTICK_BTN = 25;
+const int PIN_JOYSTICK_X = 13;
+const int PIN_JOYSTICK_Y = 12;
+const int PIN_JOYSTICK_BTN = 15;
 
 Camera camera;
 World world;
@@ -24,7 +24,7 @@ long last_update_time = current_time;
 void setup() {
   Serial.begin(115200);
   tft.init();
-  tft.setRotation(1);  // Set screen rotation (optional)
+  tft.setRotation(3);  // Set screen rotation (optional)
   canvas.createSprite(tft.width(), tft.height());  // Same size as screen
   world.init();
 
@@ -47,18 +47,19 @@ int convert_joystick_output(int value) {
 //TODO: solve in camera.cpp why going to position ~[27, 6] results in out of bounds tiles
 void loop() {
   current_time = millis();
-  if (current_time - last_update_time <= 1000 / FPS) {
+  long delta_time_i = current_time - last_update_time;
+  if (delta_time_i <= 1000 / FPS) {
     return;
   }
-  double delta_time = (current_time - last_update_time) / 1000.0;
+  double delta_time_d = delta_time_i / 1000.0;
   last_update_time = current_time;
-  Serial.println("FPS: " + String(1 / delta_time));
+  // Serial.println("FPS: " + String(1 / delta_time));
 
-  int x_direction = convert_joystick_output(analogRead(PIN_JOYSTICK_X)) * delta_time;
-  int y_direction = -convert_joystick_output(analogRead(PIN_JOYSTICK_Y)) * delta_time;
+  int dx = convert_joystick_output(analogRead(PIN_JOYSTICK_X)) * delta_time_d;
+  int dy = -convert_joystick_output(analogRead(PIN_JOYSTICK_Y)) * delta_time_d;
   bool buttonPressed = digitalRead(PIN_JOYSTICK_BTN) == LOW;
 
-  player.update(x_direction, y_direction);
+  player.update(dx, dy);
   camera.follow(player);
 
   canvas.fillSprite(TFT_RED);

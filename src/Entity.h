@@ -12,6 +12,8 @@ private:
 protected:
     World& world;
     BoundingBox bounding_box;
+    int animation_frames = 24;
+    int animation_frame_length = 6;
     int x;
     int y;
 public:

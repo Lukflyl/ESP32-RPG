@@ -18,15 +18,16 @@ class World {
 public:
     void draw(TFT_eSprite& g, Camera& camera);
     void init();
-    void is_movement_allowed(int& desired_x, int &desired_y, BoundingBox& bounding_box);
+    void constraint_movement(BoundingBox& bounding_box, int& dx, int &dy);
 private:
     std::vector<std::vector<Tile>> terrain_data;
 
+    bool is_movement_valid(BoundingBox& bounding_box, int dx, int dy);
     int get_tile_coordinate(int coordinate);
     void generate();
     bool apply_rules();
     int count_neighbours(int x, int y, TileType to_count);
-    void find_furthest_allowed_position(int x, int y, int& desired_mov_x, int& desired_mov_y);
+    void find_furthest_allowed_position(BoundingBox& bounding_box, int& dx, int& dy);
 };
 
 #endif // WORLD_H
