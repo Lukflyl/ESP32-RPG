@@ -22,7 +22,7 @@ public:
 
     std::array<std::tuple<int, int>, 4> get_corners() const;
 
-    void draw(TFT_eSprite& g, int off_x, int off_y);
+    void draw(TFT_eSprite& g, int off_x, int off_y) const;
 };
 
 #endif
