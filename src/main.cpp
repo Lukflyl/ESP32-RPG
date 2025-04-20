@@ -43,7 +43,9 @@ int convert_joystick_output(int value) {
   if (value < 1536) {
     return map(value, 0, 1536, -96, -1);
   }
+  return 0;
 }
+
 //TODO: solve in camera.cpp why going to position ~[27, 6] results in out of bounds tiles
 void loop() {
   current_time = millis();

@@ -16,11 +16,12 @@ void Player::draw(TFT_eSprite& g, Camera& camera) const {
 
             int pixel_x = x + sx * scale_factor - camera.get_offset_pixels_x();
             int pixel_y = y + sy * scale_factor - camera.get_offset_pixels_y();
-            g.fillRect(pixel_x, pixel_y, scale_factor, scale_factor, colors[current_frame[sy][sx] - 1]);
+            int color_key = current_frame[sy][sx];
+            g.fillRect(pixel_x, pixel_y, scale_factor, scale_factor, player_sprites_color_map[color_key]);
         }
     }
 
-    bounding_box.draw(g, camera.get_offset_pixels_x(), camera.get_offset_pixels_y());
+    // bounding_box.draw(g, camera.get_offset_pixels_x(), camera.get_offset_pixels_y());
 }
 
 void Player::update(int dx, int dy) {

@@ -5,6 +5,23 @@ void World::init() {
         terrain_data.push_back(std::vector<Tile>(WORLD_SIZE, Tile(EMPTY, TFT_BLACK)));
     }
     generate();
+    add_trees();
+}
+
+void World::add_trees() {
+    for (int x = 0; x < WORLD_SIZE; x++) {
+        for (int y = 0; y < WORLD_SIZE; y++) {
+            if (terrain_data[y][x].get_type() != GRASS) {
+                continue;
+            }
+            int value = std::rand() % 100;
+            if (value == 0) {
+                int tx = x * UNIT_SIZE;
+                int ty = y * UNIT_SIZE;
+                entities.emplace(std::make_tuple(x, y), Tree{*this, tx, ty, {tx, ty, 2, 0, UNIT_SIZE, 2 * UNIT_SIZE}});
+            }
+        }
+    }
 }
 
 void World::generate() {    
@@ -69,6 +86,10 @@ void World::draw(TFT_eSprite& g, Camera& camera) {
 
     for (int x = start_tile_x; x < end_tile_x; x++) {
         for (int y = start_tile_y; y < end_tile_y; y++) {
+            auto tile_key = std::make_tuple(x, y);
+            if (entities.count(tile_key) != 0) {
+                entities[tile_key].draw(g, camera);
+            }
             int index_x = x % WORLD_SIZE;
             if (index_x < 0) {
                 index_x += WORLD_SIZE;

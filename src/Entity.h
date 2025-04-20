@@ -7,13 +7,8 @@
 #include "constants.h"
 #include "sprites.h"
 
-class World;
-class Camera;
-
 class Entity {
 private:
-
-
 protected:
     World& world;
     BoundingBox bounding_box;
