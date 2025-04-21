@@ -1,9 +1,9 @@
 #include "Player.h"
 
-Player::Player(World& world, int start_x, int start_y, BoundingBox bounding_box): 
-    Entity{world, start_x, start_y, bounding_box, player_sprites} {}
+Player::Player(int start_x, int start_y, BoundingBox bounding_box): 
+    Entity{start_x, start_y, bounding_box, player_sprites} {}
 
-void Player::draw(TFT_eSprite& g, Camera& camera) const {
+void Player::draw(TFT_eSprite& g, const Camera& camera) const {
     std::array<int, 7> colors {TFT_BLACK, TFT_BROWN, 0xFDB8, TFT_RED, 0xAEDC, TFT_LIGHTGREY, TFT_DARKGREY};
 
     auto& current_frame = animation_sprites[animation_type][animation_current_frame / animation_frame_length];
@@ -21,12 +21,11 @@ void Player::draw(TFT_eSprite& g, Camera& camera) const {
         }
     }
 
-    // bounding_box.draw(g, camera.get_offset_pixels_x(), camera.get_offset_pixels_y());
+    draw_bb(g, camera.get_offset_pixels_x(), camera.get_offset_pixels_y());
 }
 
-void Player::update(int dx, int dy) {
+void Player::update() {
     int world_size_pixels = WORLD_SIZE * UNIT_SIZE;
-    world.constraint_movement(bounding_box, dx, dy);
 
     animation_current_frame = (animation_current_frame + 1) % animation_loop_length;
 

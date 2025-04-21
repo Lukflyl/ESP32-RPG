@@ -1,9 +1,9 @@
 #include "Tree.h"
 
-Tree::Tree(World& world, int start_x, int start_y, BoundingBox bounding_box): 
-    Entity{world, start_x, start_y, bounding_box, tree_sprites} {}
+Tree::Tree(int start_x, int start_y, BoundingBox bounding_box): 
+    Entity{start_x, start_y, bounding_box, tree_sprites} {}
 
-void Tree::draw(TFT_eSprite& g, Camera& camera) const {
+void Tree::draw(TFT_eSprite& g, const Camera& camera) const {
     auto& current_frame = animation_sprites[IDLE][0];
 
     for (int sy = 0; sy < current_frame.size(); sy++) {
@@ -19,7 +19,7 @@ void Tree::draw(TFT_eSprite& g, Camera& camera) const {
     }
     }
 
-    bounding_box.draw(g, camera.get_offset_pixels_x(), camera.get_offset_pixels_y());
+    draw_bb(g, camera.get_offset_pixels_x(), camera.get_offset_pixels_y());
 }
 
-void Tree::update(int dx, int dy) {}
+void Tree::update() {}

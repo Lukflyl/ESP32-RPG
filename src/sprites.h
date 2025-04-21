@@ -1,10 +1,10 @@
 #ifndef SPRITES_H
 #define SPRITES_H
 
-#include "array"
+#include <TFT_eSPI.h>
+#include <array>
+#include <map>
 #include "constants.h"
-#include "map"
-#include "TFT_eSPI.h"
 
 enum AnimationType {
     IDLE,

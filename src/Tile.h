@@ -16,11 +16,11 @@ private:
 public:
     Tile(TileType type, uint32_t color);
 
-    bool is_walkable();
+    bool is_walkable() const;
 
-    TileType get_type();
+    TileType get_type() const;
 
-    uint32_t get_color();
+    uint32_t get_color() const;
 };
 
 

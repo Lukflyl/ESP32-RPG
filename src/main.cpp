@@ -1,12 +1,8 @@
 #include <Arduino.h>
 #include <TFT_eSPI.h>
 #include "World.h"
-#include "Player.h"
-#include "Camera.h"
-#include "constants.h"
-#include "BoundingBox.h"
 
-TFT_eSPI tft = TFT_eSPI();  // Create an instance of the TFT_eSPI class
+TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite canvas = TFT_eSprite(&tft);
 
 const int FPS = 60;
@@ -15,9 +11,7 @@ const int PIN_JOYSTICK_X = 13;
 const int PIN_JOYSTICK_Y = 12;
 const int PIN_JOYSTICK_BTN = 15;
 
-Camera camera;
 World world;
-Player player(world, WORLD_SIZE * UNIT_SIZE / 2 - 50, WORLD_SIZE * UNIT_SIZE / 2, {WORLD_SIZE * UNIT_SIZE / 2, WORLD_SIZE * UNIT_SIZE / 2, 9, 0, UNIT_SIZE - 1, 2 * UNIT_SIZE - 1});
 long current_time = millis();
 long last_update_time = current_time;
 
@@ -61,12 +55,8 @@ void loop() {
   int dy = -convert_joystick_output(analogRead(PIN_JOYSTICK_Y)) * delta_time_d;
   bool buttonPressed = digitalRead(PIN_JOYSTICK_BTN) == LOW;
 
-  player.update(dx, dy);
-  camera.follow(player);
-
   canvas.fillSprite(TFT_RED);
-  world.draw(canvas, camera);
-  player.draw(canvas, camera);
-
+  world.update(dx, dy);
+  world.draw(canvas);
   canvas.pushSprite(0, 0);
 }
