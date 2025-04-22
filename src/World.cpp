@@ -6,7 +6,7 @@ void World::init() {
     }
     player = std::make_shared<Player>(Player{170, 300, BoundingBox{170, 300, 9, 0, UNIT_SIZE - 1, 2 * UNIT_SIZE - 1}});
     camera.follow(player.get());
-    entities.emplace(std::make_tuple(170 / 16, 300 / 16), player);
+    entities[std::make_tuple(170 / 16, 300 / 16)].push_back(player);
     generate();
     add_trees();
 }
@@ -22,7 +22,7 @@ void World::add_trees() {
             if (value == 0) {
                 int tx = x * UNIT_SIZE;
                 int ty = y * UNIT_SIZE;
-                entities.emplace(std::make_tuple(x, y), std::make_shared<Tree>(Tree{tx, ty, {tx, ty, 9, 13, 11, UNIT_SIZE + 2}}));
+                entities[std::make_tuple(x, y)].push_back(std::make_shared<Tree>(Tree{tx, ty, {tx, ty, 9, 13, 11, UNIT_SIZE + 2}}));
             }
         }
     }
@@ -90,13 +90,35 @@ void World::update(int direction_x, int direction_y) {
     for (int x = start_tile_x; x < end_tile_x; x++) {
         for (int y = start_tile_y; y < end_tile_y; y++) {
             auto tile_key = std::make_tuple(x, y);
-            if (entities.count(tile_key) != 0) {
-                // TODO: entity might have changed its tile
-                constraint_movement(entities[tile_key]);
-                entities[tile_key]->update();
+            for (auto& entity: entities[tile_key]) {
+                constraint_movement(entity);
+                entity->update();
             }
         }
     }
+
+    // keys have to be updated after update() is called on all entities
+    // to prevent multiple updates in one frame
+    for (int x = start_tile_x; x < end_tile_x; x++) {
+        for (int y = start_tile_y; y < end_tile_y; y++) {
+            auto old_key = std::make_tuple(x, y);
+            for (auto& entity: entities[old_key]) {
+                auto new_key = std::make_tuple(get_tile_coordinate(entity->get_x()), get_tile_coordinate(entity->get_y()));
+                if (new_key == old_key) {
+                    continue;
+                }
+                // assign entity to the new key
+                entities[new_key].push_back(entity);
+                int old_index = std::find(entities[old_key].begin(), entities[old_key].end(), entity) - entities[old_key].begin();
+                int end_index = entities[old_key].size() - 1;
+                // 'semi-swap' the entity to be removed from the old key to the end so it can be removed
+                // without shifting the vector (no need to really swap the last value is to be forgotten anyway)
+                entities[old_key][old_index] = entities[old_key][end_index];
+                entities[old_key].pop_back();
+            }
+        }
+    }
+
     camera.update();
 }
 
@@ -105,7 +127,7 @@ void World::draw(TFT_eSprite& g) const {
     int start_tile_y = camera.get_start_tile_y();
     int end_tile_x = camera.get_end_tile_x();
     int end_tile_y = camera.get_end_tile_y();
-    
+
     int tile_offset_pixels_x = camera.get_offset_pixels_x() % UNIT_SIZE;
     int tile_offset_pixels_y = camera.get_offset_pixels_y() % UNIT_SIZE;
 
@@ -126,11 +148,15 @@ void World::draw(TFT_eSprite& g) const {
     }
 
     // Entities have to be drawn over the tiles...
+    // TODO: sort by Y values for correct order of draws
     for (int x = start_tile_x; x < end_tile_x; x++) {
         for (int y = start_tile_y; y < end_tile_y; y++) {
             auto tile_key = std::make_tuple(x, y);
-            if (entities.count(tile_key) != 0) {
-                entities.at(tile_key)->draw(g, camera);
+            if (entities.count(tile_key) == 0) {
+                continue;
+            }
+            for (auto &entity: entities.at(tile_key)) {
+                entity->draw(g, camera);
             }
         }
     }

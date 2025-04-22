@@ -28,7 +28,7 @@ public:
 private:
     std::vector<std::vector<Tile>> terrain_data;
     // could possibly contain multiple values at given tile later
-    std::map<std::tuple<int, int>, std::shared_ptr<Entity>> entities;
+    std::map<std::tuple<int, int>, std::vector<std::shared_ptr<Entity>>> entities;
     Camera camera;
     std::shared_ptr<Player> player;
 
