@@ -4,7 +4,7 @@ void World::init() {
     for (int y = 0; y < WORLD_SIZE; y++) {
         terrain_data.push_back(std::vector<Tile>(WORLD_SIZE, Tile(EMPTY, TFT_BLACK)));
     }
-    player = std::make_shared<Player>(Player{170, 300, BoundingBox{170, 300, 9, 0, UNIT_SIZE - 1, 2 * UNIT_SIZE - 1}});
+    player = std::make_shared<Player>(Player{170, 300, BoundingBox{170 + 9, 300 + 0, UNIT_SIZE - 1, 2 * UNIT_SIZE - 1}});
     camera.follow(player.get());
     entities[std::make_tuple(170 / 16, 300 / 16)].push_back(player);
     generate();
@@ -22,7 +22,7 @@ void World::add_trees() {
             if (value == 0) {
                 int tx = x * UNIT_SIZE;
                 int ty = y * UNIT_SIZE;
-                entities[std::make_tuple(x, y)].push_back(std::make_shared<Tree>(Tree{tx, ty, {tx, ty, 9, 13, 11, UNIT_SIZE + 2}}));
+                entities[std::make_tuple(x, y)].push_back(std::make_shared<Tree>(Tree{tx, ty, {tx + 9, ty + 13, 11, UNIT_SIZE + 2}}));
             }
         }
     }
@@ -87,14 +87,21 @@ void World::update(int direction_x, int direction_y) {
     int end_tile_x = camera.get_end_tile_x();
     int end_tile_y = camera.get_end_tile_y();
     
-    for (int x = start_tile_x; x < end_tile_x; x++) {
-        for (int y = start_tile_y; y < end_tile_y; y++) {
+    std::vector<std::shared_ptr<Entity>> entities_to_update;
+        // FIX: -1 here aint really correct, it should be minus
+    // ('size' of the largest entity) / UNIT_SIZE 
+    for (int x = start_tile_x - 1; x < end_tile_x; x++) {
+        for (int y = start_tile_y - 1; y < end_tile_y; y++) {
             auto tile_key = std::make_tuple(x, y);
             for (auto& entity: entities[tile_key]) {
-                constraint_movement(entity);
-                entity->update();
+                entities_to_update.push_back(entity);
             }
         }
+    }
+
+    for (auto &entity: entities_to_update) {
+        constraint_movement(entity, entities_to_update);
+        entity->update();
     }
 
     // keys have to be updated after update() is called on all entities
@@ -147,24 +154,44 @@ void World::draw(TFT_eSprite& g) const {
         }
     }
 
-    // Entities have to be drawn over the tiles...
-    // TODO: sort by Y values for correct order of draws
-    for (int x = start_tile_x; x < end_tile_x; x++) {
-        for (int y = start_tile_y; y < end_tile_y; y++) {
+    // Entities have to be drawn over the tiles
+    std::vector<std::shared_ptr<Entity>> entities_to_draw;
+    // FIX: -1 here aint really correct, it should be minus
+    // ('size' of the largest entity) / UNIT_SIZE 
+    for (int x = start_tile_x - 1; x < end_tile_x; x++) {
+        for (int y = start_tile_y - 1; y < end_tile_y; y++) {
             auto tile_key = std::make_tuple(x, y);
             if (entities.count(tile_key) == 0) {
                 continue;
             }
             for (auto &entity: entities.at(tile_key)) {
-                entity->draw(g, camera);
+                entities_to_draw.push_back(entity);
             }
         }
     }
+    std::sort(entities_to_draw.begin(), entities_to_draw.end(), [](std::shared_ptr<Entity>& a, std::shared_ptr<Entity>& b) {
+        return a->get_y() < b->get_y();
+    });
+    for (auto &entity: entities_to_draw) {
+        entity->draw(g, camera);
+    }
+    
 }
 
-bool World::is_movement_valid(std::shared_ptr<Entity>& e, int dx, int dy) const {
+bool World::is_movement_valid(std::shared_ptr<Entity>& e, std::vector<std::shared_ptr<Entity>>& active_entities, int dx, int dy) const {
     for (auto [x, y]: e->get_bounding_box().get_corners()) {
         if (!terrain_data[get_tile_coordinate(y + dy)][get_tile_coordinate(x + dx)].is_walkable()) {
+            return false;
+        }
+    }
+
+    auto bounding_box = e->get_bounding_box();
+    bounding_box.shift(dx, dy);
+    for (auto &entity: active_entities) {
+        if (entity == e) {
+            continue;
+        }
+        if (entity->get_bounding_box().intersects(bounding_box)) {
             return false;
         }
     }
@@ -172,13 +199,13 @@ bool World::is_movement_valid(std::shared_ptr<Entity>& e, int dx, int dy) const 
 }
 
 // the corners of the bounding box have to be on walkable tiles before running this fn
-void World::find_furthest_allowed_position(std::shared_ptr<Entity>& e) const {
+void World::find_furthest_allowed_position(std::shared_ptr<Entity>& e, std::vector<std::shared_ptr<Entity>>& active_entities) const {
     int low_x = 0;
     int last_valid_x = 0;
     int high_x = e->get_dx();
     while(abs(low_x) != abs(high_x)) {
         int mid = (low_x + high_x) / 2;
-        if (!is_movement_valid(e, mid, 0)) {
+        if (!is_movement_valid(e, active_entities, mid, 0)) {
             high_x = mid - (e->get_dx() > 0 ? 1 : -1);
         } else {
             last_valid_x = mid;
@@ -191,7 +218,7 @@ void World::find_furthest_allowed_position(std::shared_ptr<Entity>& e) const {
     int high_y = e->get_dy();
     while(abs(low_y) != abs(high_y)) {
         int mid = (low_y + high_y) / 2;
-        if (!is_movement_valid(e, last_valid_x, mid)) {
+        if (!is_movement_valid(e, active_entities, last_valid_x, mid)) {
             high_y = mid - (e->get_dy() > 0 ? 1 : -1);
         } else {
             last_valid_y = mid;
@@ -209,9 +236,9 @@ int World::get_tile_coordinate(int coordinate) const {
     return tile;
 }
 
-void World::constraint_movement(std::shared_ptr<Entity>& e) const {
-    if (is_movement_valid(e, e->get_dx(), e->get_dy())) {
+void World::constraint_movement(std::shared_ptr<Entity>& e, std::vector<std::shared_ptr<Entity>>& active_entities) const {
+    if (is_movement_valid(e, active_entities, e->get_dx(), e->get_dy())) {
         return;
     }
-    find_furthest_allowed_position(e);
+    find_furthest_allowed_position(e, active_entities);
 }

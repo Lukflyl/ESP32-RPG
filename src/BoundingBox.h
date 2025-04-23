@@ -3,21 +3,26 @@
 
 #include <array>
 #include <tuple>
+#include "constants.h"
 
 class BoundingBox {
 private:
     int x;
     int y;
-    int offset_x;
-    int offset_y;
     int width;
     int height;
 public:
-    BoundingBox(int x, int y, int offset_x, int offset_y, int width, int height);
+    BoundingBox(int x, int y, int width, int height);
 
-    void update(int new_x, int new_y);
+    void shift(int dx, int dy);
 
     std::array<std::tuple<int, int>, 4> get_corners() const;
+
+    bool intersects(BoundingBox& other);
+    int start_x();
+    int start_y();
+    int end_x();
+    int end_y();
 };
 
 #endif

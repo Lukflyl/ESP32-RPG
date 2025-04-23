@@ -25,18 +25,16 @@ void Player::draw(TFT_eSprite& g, const Camera& camera) const {
 }
 
 void Player::update() {
-    int world_size_pixels = WORLD_SIZE * UNIT_SIZE;
-
     animation_current_frame = (animation_current_frame + 1) % animation_loop_length;
 
-    x = (x + dx) % world_size_pixels;
+    x = (x + dx) % WORLD_SIZE_PIXELS;
     if (x < 0) {
-        x += world_size_pixels;
+        x += WORLD_SIZE_PIXELS;
     }
     
-    y = (y + dy) % world_size_pixels;
+    y = (y + dy) % WORLD_SIZE_PIXELS;
     if (y < 0) {
-        y += world_size_pixels;
+        y += WORLD_SIZE_PIXELS;
     }
 
     if (dx != 0 || dy != 0) {
@@ -45,6 +43,6 @@ void Player::update() {
         animation_type = IDLE;
     }
     
-    bounding_box.update(x, y);
+    bounding_box.shift(dx, dy);
     // Serial.println("Player world position: [" + String(x) + ", " + String(y) + "]");
 }

@@ -24,7 +24,7 @@ public:
     void init();
     void draw(TFT_eSprite& g) const;
     void update(int direction_x, int direction_y);
-    void constraint_movement(std::shared_ptr<Entity>& e) const;
+    void constraint_movement(std::shared_ptr<Entity>& e, std::vector<std::shared_ptr<Entity>>& active_entities) const;
 private:
     std::vector<std::vector<Tile>> terrain_data;
     // could possibly contain multiple values at given tile later
@@ -34,12 +34,12 @@ private:
 
     void add_trees();
     void add_player();
-    bool is_movement_valid(std::shared_ptr<Entity>& e, int dx, int dy) const;
+    bool is_movement_valid(std::shared_ptr<Entity>& e, std::vector<std::shared_ptr<Entity>>& active_entities, int dx, int dy) const;
     int get_tile_coordinate(int coordinate) const;
     void generate();
     bool apply_rules();
     int count_neighbours(int x, int y, TileType to_count) const;
-    void find_furthest_allowed_position(std::shared_ptr<Entity>& e) const;
+    void find_furthest_allowed_position(std::shared_ptr<Entity>& e, std::vector<std::shared_ptr<Entity>>& active_entities) const;
 };
 
 #endif // WORLD_H

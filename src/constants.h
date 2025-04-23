@@ -7,5 +7,5 @@ const int SCREEN_HEIGHT_PIXELS = 135;
 const int WORLD_SIZE = 100;
 const int SPRITE_SIZE = 16;
 const int UNIT_SIZE = 16;
-
+const int WORLD_SIZE_PIXELS = WORLD_SIZE * UNIT_SIZE;
 #endif // CONSTANTS_H
