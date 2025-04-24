@@ -9,7 +9,8 @@ const int FPS = 60;
 
 const int PIN_JOYSTICK_X = 13;
 const int PIN_JOYSTICK_Y = 12;
-const int PIN_JOYSTICK_BTN = 15;
+// const int PIN_JOYSTICK_BTN = 15;
+const int PIN_BTN = 0;
 
 World world;
 long current_time = millis();
@@ -24,7 +25,7 @@ void setup() {
 
   pinMode(PIN_JOYSTICK_X, INPUT);
   pinMode(PIN_JOYSTICK_Y, INPUT);
-  pinMode(PIN_JOYSTICK_BTN, INPUT_PULLUP); // Use pull-up resistor for button
+  pinMode(PIN_BTN, INPUT_PULLUP); // Use pull-up resistor for button
 }
 
 int convert_joystick_output(int value) {
@@ -53,10 +54,10 @@ void loop() {
 
   int dx = convert_joystick_output(analogRead(PIN_JOYSTICK_X)) * delta_time_d;
   int dy = -convert_joystick_output(analogRead(PIN_JOYSTICK_Y)) * delta_time_d;
-  bool buttonPressed = digitalRead(PIN_JOYSTICK_BTN) == LOW;
+  bool buttonPressed = digitalRead(PIN_BTN) == LOW;
 
   canvas.fillSprite(TFT_RED);
-  world.update(dx, dy);
+  world.update(dx, dy, buttonPressed);
   world.draw(canvas);
   canvas.pushSprite(0, 0);
 }

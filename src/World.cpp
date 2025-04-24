@@ -79,8 +79,11 @@ int World::count_neighbours(int x, int y, TileType to_count) const {
     return count;
 }
 
-void World::update(int direction_x, int direction_y) {
+void World::update(int direction_x, int direction_y, bool is_attacking) {
     player->set_direction(direction_x, direction_y);
+    if (is_attacking) {
+        player->attack();
+    }
 
     int start_tile_x = camera.get_start_tile_x();
     int start_tile_y = camera.get_start_tile_y();
@@ -90,8 +93,8 @@ void World::update(int direction_x, int direction_y) {
     std::vector<std::shared_ptr<Entity>> entities_to_update;
         // FIX: -1 here aint really correct, it should be minus
     // ('size' of the largest entity) / UNIT_SIZE 
-    for (int x = start_tile_x - 1; x < end_tile_x; x++) {
-        for (int y = start_tile_y - 1; y < end_tile_y; y++) {
+    for (int x = start_tile_x - 1; x < end_tile_x + 1; x++) {
+        for (int y = start_tile_y - 1; y < end_tile_y + 1; y++) {
             auto tile_key = std::make_tuple(x, y);
             for (auto& entity: entities[tile_key]) {
                 entities_to_update.push_back(entity);
@@ -106,8 +109,8 @@ void World::update(int direction_x, int direction_y) {
 
     // keys have to be updated after update() is called on all entities
     // to prevent multiple updates in one frame
-    for (int x = start_tile_x; x < end_tile_x; x++) {
-        for (int y = start_tile_y; y < end_tile_y; y++) {
+    for (int x = start_tile_x - 1; x < end_tile_x + 1; x++) {
+        for (int y = start_tile_y - 1; y < end_tile_y + 1; y++) {
             auto old_key = std::make_tuple(x, y);
             for (auto& entity: entities[old_key]) {
                 auto new_key = std::make_tuple(get_tile_coordinate(entity->get_x()), get_tile_coordinate(entity->get_y()));
@@ -126,7 +129,32 @@ void World::update(int direction_x, int direction_y) {
         }
     }
 
+    remove_dead_entities();
+
     camera.update();
+}
+
+void World::remove_dead_entities() {
+    // FIX: this approach to removing entities from vectors here and updating tile keys
+    // is probably INCORRECT
+    int start_tile_x = camera.get_start_tile_x();
+    int start_tile_y = camera.get_start_tile_y();
+    int end_tile_x = camera.get_end_tile_x();
+    int end_tile_y = camera.get_end_tile_y();
+    for (int x = start_tile_x; x < end_tile_x; x++) {
+        for (int y = start_tile_y; y < end_tile_y; y++) {
+            auto key = std::make_tuple(x, y);
+            for (auto& entity: entities[key]) {
+                if (!entity->is_dead()) {
+                    continue;
+                }
+                int index = std::find(entities[key].begin(), entities[key].end(), entity) - entities[key].begin();
+                entities[key][index] = entities[key][entities[key].size() - 1];
+                entities[key].pop_back();
+                Serial.println("removed dead body");
+            }
+        }
+    }
 }
 
 void World::draw(TFT_eSprite& g) const {
@@ -158,8 +186,8 @@ void World::draw(TFT_eSprite& g) const {
     std::vector<std::shared_ptr<Entity>> entities_to_draw;
     // FIX: -1 here aint really correct, it should be minus
     // ('size' of the largest entity) / UNIT_SIZE 
-    for (int x = start_tile_x - 1; x < end_tile_x; x++) {
-        for (int y = start_tile_y - 1; y < end_tile_y; y++) {
+    for (int x = start_tile_x - 1; x < end_tile_x + 1; x++) {
+        for (int y = start_tile_y - 1; y < end_tile_y + 1; y++) {
             auto tile_key = std::make_tuple(x, y);
             if (entities.count(tile_key) == 0) {
                 continue;
@@ -192,6 +220,9 @@ bool World::is_movement_valid(std::shared_ptr<Entity>& e, std::vector<std::share
             continue;
         }
         if (entity->get_bounding_box().intersects(bounding_box)) {
+            // FIX: there is a bug where the player probably gets checked with himself
+            // TODO: remove the receive damage
+            entity->receive_damage(10);
             return false;
         }
     }

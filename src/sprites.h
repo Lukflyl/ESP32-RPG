@@ -8,16 +8,17 @@
 
 enum AnimationType {
     IDLE,
-    WALKING,
-    ATTACKING,
-    DYING,
+    WALK,
+    ATTACK,
+    DEATH,
 };
 
 
 typedef std::map<AnimationType, std::array<std::array<std::array<uint16_t, SPRITE_SIZE>, SPRITE_SIZE>, 4>> AnimationSprites;
 
-extern std::array<std::array<std::array<uint16_t, SPRITE_SIZE>, SPRITE_SIZE>, 4> player_walking;
+extern std::array<std::array<std::array<uint16_t, SPRITE_SIZE>, SPRITE_SIZE>, 4> player_walk;
 extern std::array<std::array<std::array<uint16_t, SPRITE_SIZE>, SPRITE_SIZE>, 4> player_idle;
+extern std::array<std::array<std::array<uint16_t, SPRITE_SIZE>, SPRITE_SIZE>, 4> player_attack;
 extern AnimationSprites player_sprites;
 
 extern std::array<std::array<std::array<uint16_t, SPRITE_SIZE>, SPRITE_SIZE>, 4> tree_idle;

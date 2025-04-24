@@ -13,6 +13,7 @@ public:
 
     void draw(TFT_eSprite& g, const Camera& camera) const;
     void update();
+    void attack();
 };
 
 

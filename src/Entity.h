@@ -21,6 +21,7 @@ protected:
     int animation_current_frame = 0;
     int scale_factor = 2;
     
+    int health = 10;
     int x;
     int y;
     int dx;
@@ -36,7 +37,8 @@ public:
     int get_dx() const;
     int get_dy() const;
     int get_size() const;
-
+    void receive_damage(int damage);
+    bool is_dead() const;
     void draw_bb(TFT_eSprite& g, int off_x, int off_y) const;
 };
 
