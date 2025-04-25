@@ -11,15 +11,18 @@ void Player::draw(TFT_eSprite& g, const Camera& camera) const {
             if (current_frame[sy][sx] == 0) {
                 continue;
             }
-            int draw_direction_x = dx >= 0 ? sx : current_frame[sy].size() - 1 - sx;
+            int draw_direction_x = orientation == RIGHT ? sx : current_frame[sy].size() - 1 - sx;
             int pixel_x = x + draw_direction_x * scale_factor - camera.get_offset_pixels_x();
             int pixel_y = y + sy * scale_factor - camera.get_offset_pixels_y();
             int color_key = current_frame[sy][sx];
             g.fillRect(pixel_x, pixel_y, scale_factor, scale_factor, player_sprites_color_map[color_key]);
         }
     }
-
-    draw_bb(g, camera.get_offset_pixels_x(), camera.get_offset_pixels_y());
+    draw_health_bar(g, camera);
+    for (const auto &a: attacks) {
+        a.get_bounding_box().draw(g, camera.get_offset_pixels_x(), camera.get_offset_pixels_y());
+    }
+    bounding_box.draw(g, camera.get_offset_pixels_x(), camera.get_offset_pixels_y());
 }
 
 void Player::update() {
@@ -44,6 +47,14 @@ void Player::update() {
     } else {
         animation_type = IDLE;
     }
+
+    // Change orientation only if the player is moving along x axis
+    // otherwise leave it as last value
+    if (dx > 0) {
+        orientation = RIGHT;
+    } else if (dx < 0) {
+        orientation = LEFT;
+    }
     
     bounding_box.shift(dx, dy);
     // Serial.println("Player world position: [" + String(x) + ", " + String(y) + "]");
@@ -55,4 +66,5 @@ void Player::attack() {
     }
     animation_type = ATTACK;
     animation_current_frame = 0;
+    attacks.push_back({this, {x, y, 8, 8}, 3});
 }

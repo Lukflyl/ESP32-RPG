@@ -46,3 +46,12 @@ int BoundingBox::end_x() {
 int BoundingBox::end_y() {
     return y + height;
 }
+
+// debug code
+void BoundingBox::draw(TFT_eSprite& g, int off_x, int off_y) const {
+    auto corners = get_corners();
+    g.drawLine(std::get<0>(corners[0]) - off_x, std::get<1>(corners[0]) - off_y, std::get<0>(corners[1]) - off_x, std::get<1>(corners[1]) - off_y, TFT_RED);
+    g.drawLine(std::get<0>(corners[1]) - off_x, std::get<1>(corners[1]) - off_y, std::get<0>(corners[2]) - off_x, std::get<1>(corners[2]) - off_y, TFT_RED);
+    g.drawLine(std::get<0>(corners[2]) - off_x, std::get<1>(corners[2]) - off_y, std::get<0>(corners[3]) - off_x, std::get<1>(corners[3]) - off_y, TFT_RED);
+    g.drawLine(std::get<0>(corners[3]) - off_x, std::get<1>(corners[3]) - off_y, std::get<0>(corners[0]) - off_x, std::get<1>(corners[0]) - off_y, TFT_RED);
+}

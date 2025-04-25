@@ -1,6 +1,7 @@
 #ifndef BOUNDING_BOX_H
 #define BOUNDING_BOX_H
 
+#include <TFT_eSPI.h>
 #include <array>
 #include <tuple>
 #include "constants.h"
@@ -23,6 +24,8 @@ public:
     int start_y();
     int end_x();
     int end_y();
+    // debug code
+    void draw(TFT_eSprite& g, int off_x, int off_y) const;
 };
 
 #endif

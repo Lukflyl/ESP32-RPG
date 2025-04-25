@@ -16,10 +16,10 @@ void Tree::draw(TFT_eSprite& g, const Camera& camera) const {
             int pixel_y = y + sy * scale_factor - camera.get_offset_pixels_y();
             int color_key = current_frame[sy][sx];
             g.fillRect(pixel_x, pixel_y, scale_factor, scale_factor, tree_sprites_color_map[color_key]);
+        }
     }
-    }
-
-    draw_bb(g, camera.get_offset_pixels_x(), camera.get_offset_pixels_y());
+    draw_health_bar(g, camera);
+    bounding_box.draw(g, camera.get_offset_pixels_x(), camera.get_offset_pixels_y());
 }
 
 void Tree::update() {}

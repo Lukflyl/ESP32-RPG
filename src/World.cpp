@@ -128,7 +128,6 @@ void World::update(int direction_x, int direction_y, bool is_attacking) {
             }
         }
     }
-
     remove_dead_entities();
 
     camera.update();
@@ -203,7 +202,6 @@ void World::draw(TFT_eSprite& g) const {
     for (auto &entity: entities_to_draw) {
         entity->draw(g, camera);
     }
-    
 }
 
 bool World::is_movement_valid(std::shared_ptr<Entity>& e, std::vector<std::shared_ptr<Entity>>& active_entities, int dx, int dy) const {
@@ -222,7 +220,6 @@ bool World::is_movement_valid(std::shared_ptr<Entity>& e, std::vector<std::share
         if (entity->get_bounding_box().intersects(bounding_box)) {
             // FIX: there is a bug where the player probably gets checked with himself
             // TODO: remove the receive damage
-            entity->receive_damage(10);
             return false;
         }
     }

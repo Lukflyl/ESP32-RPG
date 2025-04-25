@@ -32,13 +32,14 @@ BoundingBox Entity::get_bounding_box() const {
     return bounding_box;
 }
 
-// THIS CODE IS ONLY FOR DEBUGGING PURPOSES
-void Entity::draw_bb(TFT_eSprite& g, int off_x, int off_y) const {
-    auto corners = bounding_box.get_corners();
-    g.drawLine(std::get<0>(corners[0]) - off_x, std::get<1>(corners[0]) - off_y, std::get<0>(corners[1]) - off_x, std::get<1>(corners[1]) - off_y, TFT_RED);
-    g.drawLine(std::get<0>(corners[1]) - off_x, std::get<1>(corners[1]) - off_y, std::get<0>(corners[2]) - off_x, std::get<1>(corners[2]) - off_y, TFT_RED);
-    g.drawLine(std::get<0>(corners[2]) - off_x, std::get<1>(corners[2]) - off_y, std::get<0>(corners[3]) - off_x, std::get<1>(corners[3]) - off_y, TFT_RED);
-    g.drawLine(std::get<0>(corners[3]) - off_x, std::get<1>(corners[3]) - off_y, std::get<0>(corners[0]) - off_x, std::get<1>(corners[0]) - off_y, TFT_RED);
+void Entity::draw_health_bar(TFT_eSprite& g, const Camera& camera) const {
+    int width = get_size();
+    int height = 8;
+    int start_x = x - camera.get_offset_pixels_x();
+    int start_y = y - camera.get_offset_pixels_y() - height - 2;
+    int filled_width = static_cast<double>(health) / static_cast<double>(max_health) * width;
+    g.fillRect(start_x, start_y, filled_width, height, TFT_RED);
+    g.drawRect(start_x, start_y, width, height, TFT_BLACK);
 }
 
 void Entity::receive_damage(int damage) {
